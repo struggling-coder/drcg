@@ -241,3 +241,24 @@ end entity skin;
 
 entity test_perceptron is
 end entity test_perceptron;
+
+architecture tb of test_perceptron is
+signal inp1, inp2, inp3, inp4, inp5, inp6, inp7, tr_out, mode, output, status, done: bit;
+begin
+	tp: work.perceptron(behaviour) port map(inp1, inp2, inp3, inp4, inp5, inp6, inp7, tr_out, mode, output, status);
+	inp1 <= '1';
+	inp2 <= '1';
+	inp3 <= '1';
+	inp4 <= '1';
+	inp5 <= '1';
+	inp6 <= '1';
+	inp7 <= '1';
+	mode <= '0';
+	
+	do: process(status)
+	begin
+		if status = '1' then
+			done <= output;
+		end if;
+	end process do;
+end architecture tb;
