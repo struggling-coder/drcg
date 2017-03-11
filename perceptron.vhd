@@ -3,6 +3,18 @@ use IEEE.NUMERIC_STD.ALL;
 
 -- 0 is the threshold weight
 -- 1 to 7 are the display weights
+--  
+--  The display is:
+--
+--  |---- 1 ----|
+--  |           |
+--  2           3
+--  |           |
+--  |---- 4 ----|
+--  |           |
+--  5           6
+--  |           |
+--  |---- 7 ----|
 
 entity perceptron is
 port (in1, in2, in3, in4, in5, in6, in7, tr_out, mode: in bit;
@@ -13,8 +25,8 @@ architecture behaviour of perceptron is
 type arrayw is array(0 to 7) of integer;
 shared variable weights: arrayw:= (others => 0);
 shared variable tempsum: integer:= 0;
-
 signal t_out: bit;
+
 begin
 basic: process(in1, in2, in3, in4, in5, in6, in7, mode, tr_out) is
 variable placeholder: integer;
@@ -148,11 +160,8 @@ begin
 	end if;
 end process basic;
 
-
 --wchange: process(in1, in2, in3, in4, in5, in6, in7, t_out, tr_out) is
-
 --end process wchange;
-
 
 end architecture behaviour;
 
@@ -198,7 +207,7 @@ begin
 	do: process(inp1, inp2, inp3, inp4, inp5, inp6, inp7, mode, tr_out1, tr_out2, tr_out3, tr_out4, tr_out5, tr_out6, tr_out7, tr_out8, tr_out9, tr_out0) is
 	begin
 		if mode = '0' then
-			wait on status0, status1, status2, status3, status4, status5, status6, status7, status8, status9;
+--			wait on status0, status1, status2, status3, status4, status5, status6, status7, status8, status9;
 			if status0 = '1' and status1 = '1' and status2 = '1' and status3 = '1' and status4 = '1' and status5 = '1' and status6 = '1' and status7 = '1' and status8 = '1' and status9 = '1' then
 				if out0 = '1' then 
 					d_output <= 0;
@@ -243,22 +252,148 @@ entity test_perceptron is
 end entity test_perceptron;
 
 architecture tb of test_perceptron is
-signal inp1, inp2, inp3, inp4, inp5, inp6, inp7, tr_out, mode, output, status, done: bit;
+signal in1, in2, in3, in4, in5, in6, in7, tr_out, mode, output, status, done: bit;
+component perceptron is
+port (in1, in2, in3, in4, in5, in6, in7, tr_out, mode: in bit;
+		output, status: out bit);
+end component;
 begin
-	tp: work.perceptron(behaviour) port map(inp1, inp2, inp3, inp4, inp5, inp6, inp7, tr_out, mode, output, status);
-	inp1 <= '1';
-	inp2 <= '1';
-	inp3 <= '1';
-	inp4 <= '1';
-	inp5 <= '1';
-	inp6 <= '1';
-	inp7 <= '1';
-	mode <= '0';
+	-- I have to do this at least once :'(
 	
+	tp: perceptron port map(in1 , in2, in3, in4, in5, in6, in7, tr_out, mode, output, status);
+
+	process is
+	begin
+	
+	-- digit 0
+	in1 <= '1';
+	in2 <= '1';
+	in3 <= '1';
+	in4 <= '0';
+	in5 <= '1';
+	in6 <= '1';
+	in7 <= '1';
+	mode <= '1';
+	tr_out <= '1';
+	wait until status = '1';
+	
+	-- digit 1
+	in1 <= '0';
+	in2 <= '0';
+	in3 <= '1';
+	in4 <= '0';
+	in5 <= '0';
+	in6 <= '1';
+	in7 <= '0';
+	mode <= '1';
+	tr_out <= '0';
+	wait until status = '1';
+
+	-- digit 2
+	in1 <= '1';
+	in2 <= '0';
+	in3 <= '1';
+	in4 <= '1';
+	in5 <= '1';
+	in6 <= '0';
+	in7 <= '1';
+	mode <= '1';
+	tr_out <= '0';
+	wait until status = '1';
+
+	-- digit 3
+	in1 <= '1';
+	in2 <= '0';
+	in3 <= '1';
+	in4 <= '1';
+	in5 <= '0';
+	in6 <= '1';
+	in7 <= '1';
+	mode <= '1';
+	tr_out <= '0';
+	wait until status = '1';
+
+	-- digit 4
+	in1 <= '0';
+	in2 <= '1';
+	in3 <= '1';
+	in4 <= '1';
+	in5 <= '0';
+	in6 <= '1';
+	in7 <= '0';
+	mode <= '0';
+	tr_out <= '1';
+	wait until status = '1';
+
+	-- digit 5
+	in1 <= '1';
+	in2 <= '0';
+	in3 <= '1';
+	in4 <= '1';
+	in5 <= '1';
+	in6 <= '0';
+	in7 <= '1';
+	mode <= '1';
+	tr_out <= '0';
+	wait until status = '1';
+
+	-- digit 6
+	in1 <= '1';
+	in2 <= '1';
+	in3 <= '0';
+	in4 <= '1';
+	in5 <= '1';
+	in6 <= '1';
+	in7 <= '1';
+	mode <= '0';
+	tr_out <= '1';
+	wait until status = '1';
+
+	-- digit 7
+	in1 <= '1';
+	in2 <= '0';
+	in3 <= '1';
+	in4 <= '0';
+	in5 <= '0';
+	in6 <= '1';
+	in7 <= '0';
+	mode <= '1';
+	tr_out <= '0';
+	wait until status = '1';
+
+	-- digit 8
+	in1 <= '1';
+	in2 <= '1';
+	in3 <= '1';
+	in4 <= '1';
+	in5 <= '1';
+	in6 <= '1';
+	in7 <= '1';
+	mode <= '1';
+	tr_out <= '0';
+	wait until status = '1';
+	
+	-- digit 9
+	in1 <= '1';
+	in2 <= '1';
+	in3 <= '1';
+	in4 <= '1';
+	in5 <= '0';
+	in6 <= '1';
+	in7 <= '1';
+	mode <= '1';
+	tr_out <= '0';
+	wait until status = '1';
+	
+	wait for 100 ns;
+	end process;
+		
 	do: process(status)
 	begin
 		if status = '1' then
 			done <= output;
 		end if;
 	end process do;
+	
 end architecture tb;
+
