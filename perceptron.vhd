@@ -15,10 +15,15 @@ use IEEE.NUMERIC_STD.ALL;
 --  5           6
 --  |           |
 --  |---- 7 ----|
+--  
+--  For the perceptron, mode 0 is test and mode 1 is train
+--
 
 entity perceptron is
 port (in1, in2, in3, in4, in5, in6, in7, tr_out, mode: in bit;
-		output, status: out bit);
+		output, status: out bit;
+		trainstat: out integer
+		);
 end entity perceptron;
 
 architecture behaviour of perceptron is
@@ -59,16 +64,16 @@ begin
 			end if;
 			
 			if tempsum > 0 then
-				output <= '1' after 50 ns;
-				status <= '1' after 50 ns;
+				output <= '1'  ;
+				status <= '1'  ;
 			else 
-				output <= '0' after 50 ns;
-				status <= '1' after 50 ns;
+				output <= '0'  ;
+				status <= '1'  ;
 			end if;
 			
 		elsif mode = '1' then 
 		status <= '0';
-		
+		output <= '0';
 			tempsum := tempsum + weights(0);
 			placeholder := placeholder + 1;
 			if in1 = '1' then
@@ -100,9 +105,9 @@ begin
 				tempsum := tempsum + weights(7);
 			end if;
 				
-		if tempsum > 0 and placeholder = 10 then
+		if tempsum > 0 and placeholder = 8 then
 			t_out <= '1';
-		elsif tempsum <0 and placeholder = 10 then	
+		elsif tempsum < 0 and placeholder = 8 then	
 			t_out <= '0';
 		end if;
 
@@ -156,9 +161,13 @@ begin
 				weights(7) := weights(7) - 1;
 			end if;			
 		end if;
-		status <= '1' after 50 ns;
+		status <= '1' ;
 	end if;
 end process basic;
+
+--asynch_status: process(async) is
+--	status <= async;
+--end process asynch_status;
 
 --wchange: process(in1, in2, in3, in4, in5, in6, in7, t_out, tr_out) is
 --end process wchange;
@@ -249,10 +258,12 @@ entity skin is
 end entity skin;
 
 entity test_perceptron is
+port (ct: out integer);
 end entity test_perceptron;
 
 architecture tb of test_perceptron is
 signal in1, in2, in3, in4, in5, in6, in7, tr_out, mode, output, status, done: bit;
+signal ctrl: integer range -1 to 20 := -1;
 component perceptron is
 port (in1, in2, in3, in4, in5, in6, in7, tr_out, mode: in bit;
 		output, status: out bit);
@@ -260,11 +271,16 @@ end component;
 begin
 	-- I have to do this at least once :'(
 	
-	tp: perceptron port map(in1 , in2, in3, in4, in5, in6, in7, tr_out, mode, output, status);
-
-	process is
+	tp: perceptron port map(in1 , in2, in3, in4, in5 , in6, in7, tr_out, mode, output, status);
+	
+	process(ctrl) is
 	begin
 	
+	ct <= 0;
+	
+	case ctrl is 
+
+	when -1 =>
 	-- digit 0
 	in1 <= '1';
 	in2 <= '1';
@@ -275,8 +291,9 @@ begin
 	in7 <= '1';
 	mode <= '1';
 	tr_out <= '1';
-	wait until status = '1';
+	ctrl <= ctrl + 1 after 1 ns;
 	
+	when 0 =>
 	-- digit 1
 	in1 <= '0';
 	in2 <= '0';
@@ -287,8 +304,9 @@ begin
 	in7 <= '0';
 	mode <= '1';
 	tr_out <= '0';
-	wait until status = '1';
+	ctrl <= ctrl + 1 after 1 ns;
 
+	when 1 =>
 	-- digit 2
 	in1 <= '1';
 	in2 <= '0';
@@ -299,8 +317,9 @@ begin
 	in7 <= '1';
 	mode <= '1';
 	tr_out <= '0';
-	wait until status = '1';
+	ctrl <= ctrl + 1 after 1 ns;
 
+	when 2 =>
 	-- digit 3
 	in1 <= '1';
 	in2 <= '0';
@@ -311,8 +330,9 @@ begin
 	in7 <= '1';
 	mode <= '1';
 	tr_out <= '0';
-	wait until status = '1';
+	ctrl <= ctrl + 1 after 1 ns;
 
+	when 3 =>
 	-- digit 4
 	in1 <= '0';
 	in2 <= '1';
@@ -321,10 +341,11 @@ begin
 	in5 <= '0';
 	in6 <= '1';
 	in7 <= '0';
-	mode <= '0';
-	tr_out <= '1';
-	wait until status = '1';
+	mode <= '1';
+	tr_out <= '0';
+	ctrl <= ctrl + 1 after 1 ns;
 
+	when 4 =>
 	-- digit 5
 	in1 <= '1';
 	in2 <= '0';
@@ -335,8 +356,9 @@ begin
 	in7 <= '1';
 	mode <= '1';
 	tr_out <= '0';
-	wait until status = '1';
+	ctrl <= ctrl + 1 after 1 ns;
 
+	when 5 =>
 	-- digit 6
 	in1 <= '1';
 	in2 <= '1';
@@ -345,10 +367,11 @@ begin
 	in5 <= '1';
 	in6 <= '1';
 	in7 <= '1';
-	mode <= '0';
-	tr_out <= '1';
-	wait until status = '1';
+	mode <= '1';
+	tr_out <= '0';
+	ctrl <= ctrl + 1 after 1 ns;
 
+	when 6 =>
 	-- digit 7
 	in1 <= '1';
 	in2 <= '0';
@@ -359,8 +382,9 @@ begin
 	in7 <= '0';
 	mode <= '1';
 	tr_out <= '0';
-	wait until status = '1';
+	ctrl <= ctrl + 1 after 1 ns;
 
+	when 7 =>
 	-- digit 8
 	in1 <= '1';
 	in2 <= '1';
@@ -371,8 +395,9 @@ begin
 	in7 <= '1';
 	mode <= '1';
 	tr_out <= '0';
-	wait until status = '1';
+	ctrl <= ctrl + 1 after 1 ns;
 	
+	when 8 =>
 	-- digit 9
 	in1 <= '1';
 	in2 <= '1';
@@ -383,17 +408,184 @@ begin
 	in7 <= '1';
 	mode <= '1';
 	tr_out <= '0';
-	wait until status = '1';
+	ctrl <= ctrl + 1 after 1 ns;
+	--cycle complete
 	
-	wait for 100 ns;
+	when 9 =>
+	mode <= '0';
+	in1 <= '1';
+	in2 <= '1';
+	in3 <= '1';
+	in4 <= '0';
+	in5 <= '1';
+	in6 <= '1';
+	in7 <= '1';
+	ctrl <= ctrl + 1 after 1 ns;
+	
+	when 10 =>
+	if output = '0' then 
+		ctrl <= -1 after 1 ns;
+	else 
+		ctrl <= ctrl + 1 after 1 ns;
+	end if;
+	
+	-- digit 1
+	in1 <= '0';
+	in2 <= '0';
+	in3 <= '1';
+	in4 <= '0';
+	in5 <= '0';
+	in6 <= '1';
+	in7 <= '0';
+	mode <= '0';
+
+
+	when 11 =>
+	-- digit 2
+	in1 <= '1';
+	in2 <= '0';
+	in3 <= '1';
+	in4 <= '1';
+	in5 <= '1';
+	in6 <= '0';
+	in7 <= '1';
+	mode <= '0';
+	if output = '1' then 
+		ctrl <= 0 after 1 ns;
+	else 
+		ctrl <= ctrl + 1 after 1 ns;
+	end if;
+
+	when 12 =>
+	-- digit 3
+	in1 <= '1';
+	in2 <= '0';
+	in3 <= '1';
+	in4 <= '1';
+	in5 <= '0';
+	in6 <= '1';
+	in7 <= '1';
+	mode <= '0';
+	if output = '1' then 
+		ctrl <= 1 after 1 ns;
+	else 
+		ctrl <= ctrl + 1 after 1 ns;
+	end if;
+
+
+	when 13 =>
+	-- digit 4
+	in1 <= '0';
+	in2 <= '1';
+	in3 <= '1';
+	in4 <= '1';
+	in5 <= '0';
+	in6 <= '1';
+	in7 <= '0';
+	mode <= '0';
+	if output = '1' then 
+		ctrl <= 2 after 1 ns;
+	else 
+		ctrl <= ctrl + 1 after 1 ns;
+	end if;
+
+
+	when 14 =>
+	-- digit 5
+	in1 <= '1';
+	in2 <= '0';
+	in3 <= '1';
+	in4 <= '1';
+	in5 <= '1';
+	in6 <= '0';
+	in7 <= '1';
+	mode <= '0';
+	if output = '1' then 
+		ctrl <= 3 after 1 ns;
+	else 
+		ctrl <= ctrl + 1 after 1 ns;
+	end if;
+
+	when 15 =>
+	-- digit 6
+	in1 <= '1';
+	in2 <= '1';
+	in3 <= '0';
+	in4 <= '1';
+	in5 <= '1';
+	in6 <= '1';
+	in7 <= '1';
+	mode <= '0';
+	if output = '1' then 
+		ctrl <= 4 after 1 ns;
+	else 
+		ctrl <= ctrl + 1 after 1 ns;
+	end if;
+
+
+	when 16 =>
+	-- digit 7
+	in1 <= '1';
+	in2 <= '0';
+	in3 <= '1';
+	in4 <= '0';
+	in5 <= '0';
+	in6 <= '1';
+	in7 <= '0';
+	mode <= '0';
+	if output = '1' then 
+		ctrl <= 5 after 1 ns;
+	else 
+		ctrl <= ctrl + 1 after 1 ns;
+	end if;
+
+
+	when 17 =>
+	-- digit 8
+	in1 <= '1';
+	in2 <= '1';
+	in3 <= '1';
+	in4 <= '1';
+	in5 <= '1';
+	in6 <= '1';
+	in7 <= '1';
+	mode <= '0';
+	if output = '1' then 
+		ctrl <= 6 after 1 ns;
+	else 
+		ctrl <= ctrl + 1 after 1 ns;
+	end if;
+
+	
+	when 18 =>
+	-- digit 9
+	in1 <= '1';
+	in2 <= '1';
+	in3 <= '1';
+	in4 <= '1';
+	in5 <= '0';
+	in6 <= '1';
+	in7 <= '1';
+	mode <= '0';
+	if output = '1' then 
+		ctrl <= 7 after 1 ns;
+	else 
+		ctrl <= ctrl + 1 after 1 ns;
+	end if;
+	
+	when 19 =>
+	if output = '1' then 
+		ctrl <= 8 after 1 ns;
+	else 
+		ctrl <= ctrl + 1 after 1 ns;
+	end if;
+	
+	when 20 =>
+	-- train phase reached
+	ct <= 1;
+	
+	end case;
 	end process;
 		
-	do: process(status)
-	begin
-		if status = '1' then
-			done <= output;
-		end if;
-	end process do;
-	
 end architecture tb;
 
