@@ -16,7 +16,6 @@ digits=[
 ]
 
 digits = [np.array([int(digits[i][j]) for j in range(0, 8)]) for i in range(0, 10)]
-weights = np.array([-1,1,-6,0,-9,-5,1,-8]) 
+weights = np.array(input("> "))#[0,0,0,0,-2,0,1,0]) 
 
 print [dot(weights, digits[i]) for i in range(0, 10)]
-

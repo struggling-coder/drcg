@@ -97,14 +97,14 @@ begin
 	when 4 =>
 	-- digit 5
 	in1 <= '1';
-	in2 <= '0';
-	in3 <= '1';
+	in2 <= '1';
+	in3 <= '0';
 	in4 <= '1';
-	in5 <= '1';
-	in6 <= '0';
+	in5 <= '0';
+	in6 <= '1';
 	in7 <= '1';
 	mode <= '1';
-	tr_out <= '0';
+	tr_out <= '1';
 	ctrl <= ctrl + 1 after 1 ns; -- counter <= counter + 1 after 1 ns; 
 
 	when 5 =>
@@ -130,7 +130,7 @@ begin
 	in6 <= '1';
 	in7 <= '0';
 	mode <= '1';
-	tr_out <= '1';
+	tr_out <= '0';
 	ctrl <= ctrl + 1 after 1 ns; -- counter <= counter + 1 after 1 ns; 
 
 	when 7 =>
@@ -192,10 +192,7 @@ begin
 
 	when 11 =>
 	-- digit 2
-	if output = '1' then 
-		ct <= 2;
-	end if;
-	
+
 	in1 <= '1';
 	in2 <= '0';
 	in3 <= '1';
@@ -247,11 +244,11 @@ begin
 	when 14 =>
 	-- digit 5
 	in1 <= '1';
-	in2 <= '0';
-	in3 <= '1';
+	in2 <= '1';
+	in3 <= '0';
 	in4 <= '1';
-	in5 <= '1';
-	in6 <= '0';
+	in5 <= '0';
+	in6 <= '1';
 	in7 <= '1';
 	mode <= '0';
 	if output = '1' then 
@@ -262,13 +259,6 @@ begin
 
 	when 15 =>
 	-- digit 6
-
-	if output = '1' then 
-		ctrl <= 4 after 1 ns;
-	else 
-		ctrl <= ctrl + 1 after 1 ns; -- counter <= counter + 1 after 1 ns; 
-	end if;
-
 	in1 <= '1';
 	in2 <= '1';
 	in3 <= '0';
@@ -277,8 +267,11 @@ begin
 	in6 <= '1';
 	in7 <= '1';
 	mode <= '0';
-
-
+	if output = '0' then 
+		ctrl <= 4 after 1 ns;
+	else 
+		ctrl <= ctrl + 1 after 1 ns; -- counter <= counter + 1 after 1 ns; 
+	end if;
 
 	when 16 =>
 	-- digit 7
@@ -307,7 +300,7 @@ begin
 	in6 <= '1';
 	in7 <= '1';
 	mode <= '0';
-	if output = '0' then 
+	if output = '1' then 
 		ctrl <= 6 after 1 ns;
 	else 
 		ctrl <= ctrl + 1 after 1 ns; -- counter <= counter + 1 after 1 ns; 
