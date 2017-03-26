@@ -5,7 +5,6 @@ end entity test_perceptron;
 architecture tb of test_perceptron is
 signal in1, in2, in3, in4, in5, in6, in7, tr_out, mode, output, done: bit;
 signal ctrl: integer range -1 to 20 := -1;
-signal counter: integer:= 0;
 component perceptron is
 port (in1, in2, in3, in4, in5, in6, in7, tr_out, mode: in bit;
 		output: out bit);

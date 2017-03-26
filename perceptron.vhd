@@ -17,8 +17,7 @@
 
 entity perceptron is
 port (in1, in2, in3, in4, in5, in6, in7, tr_out, mode: in bit;
-		output: out bit
-		);
+		output: out bit);
 end entity perceptron;
 
 architecture behaviour of perceptron is
@@ -26,13 +25,11 @@ type arrayw is array(0 to 7) of integer;
 shared variable weights: arrayw:= (others => 0);
 shared variable tempsum: integer := 0;
 shared variable t_out: bit;
-shared variable placeholder, panic: integer;
 
 begin
 basic: process(in1, in2, in3, in4, in5, in6, in7, mode, tr_out) is
 begin
 		tempsum:= 0;
-		placeholder := 0;
 		if mode = '0' then
 			tempsum := tempsum + weights(0);
 			if in1 = '1' then
@@ -66,39 +63,31 @@ begin
 		elsif mode = '1' then 
 		
 			tempsum := tempsum + weights(0);
-			placeholder := placeholder + 1;
-			if in1 = '1' then
-				placeholder := placeholder + 1;
+			if in1 = '1' then				 
 				tempsum := tempsum + weights(1);
 			end if;
 			if in2 = '1' then
-				placeholder := placeholder + 1;
 				tempsum := tempsum + weights(2);
 			end if;
 			if in3 = '1' then
-				placeholder := placeholder + 1;
 				tempsum := tempsum + weights(3);
 			end if;
 			if in4 = '1' then
-				placeholder := placeholder + 1;
 				tempsum := tempsum + weights(4);
 			end if;
 			if in5 = '1' then
-				placeholder := placeholder + 1;
 				tempsum := tempsum + weights(5);
 			end if;
 			if in6 = '1' then
-				placeholder := placeholder + 1;
 				tempsum := tempsum + weights(6);
 			end if;
 			if in7 = '1' then
-				placeholder := placeholder + 1;
 				tempsum := tempsum + weights(7);
 			end if;
 				
-		if tempsum > 0 then--and placeholder = 8 then
+		if tempsum > 0 then
 			t_out := '1';
-		else --and placeholder = 8 then	
+		else 	
 			t_out := '0';
 		end if;
 
