@@ -5,7 +5,8 @@ use ieee.numeric_std.all;
 
 entity interface is
     Port ( 
-			      clk : in STD_LOGIC; 
+    		char:in string(1 to 10);
+			clk : in STD_LOGIC; 
                start : in STD_LOGIC;
                lcd_write : in STD_LOGIC;
                reset : in STD_LOGIC;
@@ -13,10 +14,9 @@ entity interface is
                lcd_data : out STD_LOGIC_VECTOR (7 downto 0);
                e : out STD_LOGIC;
                rs : out STD_LOGIC;
-               rw : out STD_LOGIC;
-					led : out STD_LOGIC_VECTOR ( 7 downto 0):="00000000"
---					button : in STd_LOGIC
-					);
+               rw : out STD_LOGIC
+			--button : in STd_LOGIC
+);
 end interface;
 
 architecture Behavioral of interface is
@@ -24,7 +24,7 @@ architecture Behavioral of interface is
 	--type data_type is array(0 to 6) of character;
 	--constant char : data_type:= ('3','.','1','4','1','5','9');
 	--constant char : data_type:= ('A','B','C','D','E','F','G');
-	constant char : STRING:="HELLO WORLD";
+--	 constant char : STRING:="HELLO WORLD";
 	signal p, p_next:integer :=1;--0;
 	signal input1 : STD_LOGIC_VECTOR (7 downto 0):="00000000";
 	signal data : STD_LOGIC_VECTOR (7 downto 0):="00000000";--"01010000";
@@ -41,12 +41,10 @@ component lcd Port(
                e : out STD_LOGIC;
                rs : out STD_LOGIC;
                rw : out STD_LOGIC;
-					led : out STD_LOGIC_VECTOR ( 7 downto 0):="00000000";
 					lcd_state : out STD_LOGIC_VECTOR (0 to 1) := "00"
 --					button : in STd_LOGIC
 );
 end component;
-
 
 begin
 
@@ -60,7 +58,6 @@ Init_lcd : lcd PORT MAP (
 			e=>e, 
 			rs=>rs, 
 			rw=>rw, 
-			led=>led,
 			lcd_state=>lcd_state
 			);
 
@@ -158,7 +155,6 @@ chartoBIN: process(lcd_state) --char will be changed to string
 			end if;
 		end if;	
 	end process;
-
 								
 communicate: process(lcd_state)
 begin

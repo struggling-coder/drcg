@@ -13,7 +13,6 @@ entity lcd is
                e : out STD_LOGIC;
                rs : out STD_LOGIC;
                rw : out STD_LOGIC;
-					led : out STD_LOGIC_VECTOR ( 7 downto 0):="00000000";
 					lcd_state : out STD_LOGIC_VECTOR(0 to 1) := "00"
 --					button : in STd_LOGIC
 					);
@@ -98,14 +97,12 @@ architecture Behavioral of lcd is
     						  else
     								 counter_next<=counter+1; 
     						  end if; 
-    						  led<="11111111";
     						else
     							lcd_state <= "01";
                 end if;
             when write_lcd=>
     					  lcd_state <="10";
                 lcd_data <= input1; --std_LOGIC_VECTOR(to_unsigned(p,8)); -- --"00110011"; --
-    					  led <= input1;--data(p);
                 if counter = upper_limit_write then
                   e<='0';
                   counter_next<=0;
