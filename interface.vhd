@@ -14,7 +14,9 @@ entity interface is
                lcd_data : out STD_LOGIC_VECTOR (7 downto 0);
                e : out STD_LOGIC;
                rs : out STD_LOGIC;
-               rw : out STD_LOGIC
+               rw : out STD_LOGIC;
+               p, p_next:inout integer;
+               lcd_state :inout STD_LOGIC_VECTOR (0 to 1)
 			--button : in STd_LOGIC
 );
 end interface;
@@ -25,10 +27,10 @@ architecture Behavioral of interface is
 	--constant char : data_type:= ('3','.','1','4','1','5','9');
 	--constant char : data_type:= ('A','B','C','D','E','F','G');
 --	 constant char : STRING:="HELLO WORLD";
-	signal p, p_next:integer :=1;--0;
+	--signal p, p_next:integer :=1;--0;
 	signal input1 : STD_LOGIC_VECTOR (7 downto 0):="00000000";
 	signal data : STD_LOGIC_VECTOR (7 downto 0):="00000000";--"01010000";
-	signal lcd_state : STD_LOGIC_VECTOR (0 to 1);
+	--signal lcd_state : STD_LOGIC_VECTOR (0 to 1);
 	--signal char : character:= '1' ;
 
 component lcd Port(

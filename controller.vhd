@@ -3,8 +3,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity controller is
-port(dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7: in bit;
-	led : out std_logic_vector ( 7 downto 0);
+port(ipin1, ipin2, ipin3, ipin4, ipin5, ipin6, ipin7: in bit;
+	led : out std_logic_vector ( 7 downto 0):= "00000000";
 	clk: in std_logic;
 	lcd_data : out std_logic_vector (7 downto 0);
 	e, rs, rw: out std_logic);
@@ -12,10 +12,14 @@ end entity;
 
 architecture behaviour of controller is
 signal ctr_refresh,ctr_refresh_next: integer:=0;
-constant per: integer:=50000000;
-signal reset,reset_next: STD_LOGIC:='1'; 
-signal disp: string (1 to 10);
-signal start: std_logic;
+signal p, p_next:integer;
+signal disp, display: string (1 to 10);
+signal start, reset, sclk: std_logic;
+shared variable delay, count: integer:=0;
+signal dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7: bit;
+signal lcd_state: std_logic_vector(0 to 1);
+
+--constant lim: integer:= 750000000;
 
 component interface Port(
 		clk : in std_logic; 
@@ -25,42 +29,78 @@ component interface Port(
 		lcd_data : out std_logic_vector (7 downto 0);
 		e : out std_logic;
 		rs : out std_logic;
-		rw : out std_logic
-);
+		rw : out std_logic;
+		p, p_next: inout integer:= 1;
+		lcd_state: inout std_logic_vector(0 to 1));
 end component;
 
 component layer port(
-clk: in std_logic;
+sclk, clk: in std_logic;
 dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7: in bit; 
-disp: out string(1 to 10)
-);
+--ctrl:integer range -1 to 300;
+disp: out string(1 to 10));
+end component;
+
+component sclock port( 
+clk: in std_logic;
+sclk: out std_logic);
 end component;
 
 begin
+net: layer port map(sclk, clk, dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7, disp);
+LCD: interface port map(clk, start, reset, display, lcd_data, e, rs, rw);
+slow: sclock port map(clk, sclk);
 
-net: layer port map(clk, dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7, disp);
-LCD: interface port map(clk, start, reset, disp, lcd_data, e, rs, rw);
-
-process(clk,reset)
+capture: process(sclk) is
 begin
-	if reset='1' then
-		ctr_refresh<=0;
-	elsif clk='1' and clk'event then
-		ctr_refresh<=ctr_refresh_next;
-		reset<=reset_next;
-	end if;
+		dpin1 <= ipin1;
+		dpin2 <= ipin2;
+		dpin3 <= ipin3;
+		dpin4 <= ipin4;
+		dpin5 <= ipin5;
+		dpin6 <= ipin6;
+		dpin7 <= ipin7;
 end process;
 
-process(ctr_refresh,reset)
+pipeDISP: process(sclk) is
 begin
-	ctr_refresh_next<=ctr_refresh;
-	reset_next<=reset;
-	if ctr_refresh=per then
-		ctr_refresh_next<=0;
-		reset_next<=reset;
-	else
-		ctr_refresh_next<=ctr_refresh+1;
-	end if;
+	display <= disp;
+end process; 
+
+resetLCDHead: process(display) is
+begin
+	p <= 1; p_next <= 1;
+	lcd_state <= "00";
 end process;
 
 end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity sclock is
+  port (
+	clk: in std_logic;
+	sclk: out std_logic
+  ) ;
+end entity ; -- sclock
+
+architecture behaviour of sclock is
+signal count: integer:=0;
+constant lim: integer:= 50000000;
+begin
+	
+	process(clk) is
+	begin
+	if(clk'event and clk='1') then
+		count <= count +1;   --increment counter.
+	end if;
+	if(count = lim) then 
+		count <= 0;
+		sclk <='1';
+	else
+		sclk <='0';
+	end if;
+	end process;
+
+end architecture ; -- behaviour

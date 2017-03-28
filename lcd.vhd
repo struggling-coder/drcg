@@ -57,7 +57,7 @@ architecture Behavioral of lcd is
             end if;
        end process;
 
-       process(state,n,start,lcd_write_tick,counter)
+       process(state,n,start,counter)
        begin
        -- avoid lacth
           state_next<=state;
