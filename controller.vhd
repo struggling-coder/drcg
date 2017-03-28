@@ -11,17 +11,18 @@ port(ipin1, ipin2, ipin3, ipin4, ipin5, ipin6, ipin7: in bit;
 end entity;
 
 architecture behaviour of controller is
-signal ctr_refresh,ctr_refresh_next: integer:=0;
 signal p, p_next:integer;
 signal disp, display: string (1 to 10);
-signal start, reset, sclk: std_logic;
+signal lcd_write, start, reset, sclk: std_logic;
 shared variable delay, count: integer:=0;
 signal dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7: bit;
 signal lcd_state: std_logic_vector(0 to 1);
+shared variable parity: bit:= '0';
 
 --constant lim: integer:= 750000000;
 
 component interface Port(
+		lcd_write: in std_logic;
 		clk : in std_logic; 
 		start : in std_logic;
 		reset : in std_logic;
@@ -47,9 +48,18 @@ sclk: out std_logic);
 end component;
 
 begin
-net: layer port map(sclk, clk, dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7, disp);
-LCD: interface port map(clk, start, reset, display, lcd_data, e, rs, rw);
+--net: layer port map(sclk, clk, dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7, disp);
+LCD: interface port map(lcd_write, clk, start, reset, display, lcd_data, e, rs, rw);
 slow: sclock port map(clk, sclk);
+
+testLCD: process(sclk)
+begin
+	if parity = '1' then
+		disp <= "TESTING IT";
+	else
+		disp <= "ARE YOU OK";
+	end if;
+end process;
 
 capture: process(sclk) is
 begin
@@ -62,15 +72,33 @@ begin
 		dpin7 <= ipin7;
 end process;
 
-pipeDISP: process(sclk) is
-begin
-	display <= disp;
-end process; 
+--pipeDISP: process(sclk) is
+--begin
+--	if rising_edge(sclk) then
+--		reset <= '0';
+--		display <= disp;
+--	end if;
+--end process; 
 
-resetLCDHead: process(display) is
+pUpdate: process(sclk) 
 begin
-	p <= 1; p_next <= 1;
-	lcd_state <= "00";
+parity := not parity;
+end process;
+
+resetLCDHead: process(sclk, display) is
+begin
+	if parity = '1' then
+		reset <= '0';
+	else
+		reset <= '1';
+	end if;
+end process;
+
+pipeDISP: process(sclk)
+begin
+		p <= 1; p_next <= 1;
+		lcd_state <= "00";
+		display <= disp;
 end process;
 
 end architecture;
@@ -86,14 +114,14 @@ entity sclock is
 end entity ; -- sclock
 
 architecture behaviour of sclock is
-signal count: integer:=0;
-constant lim: integer:= 50000000;
+signal count: integer:= 0;
+constant lim: integer:= 50;
 begin
 	
 	process(clk) is
 	begin
 	if(clk'event and clk='1') then
-		count <= count +1;   --increment counter.
+		count <= count + 1;   --increment counter.
 	end if;
 	if(count = lim) then 
 		count <= 0;
