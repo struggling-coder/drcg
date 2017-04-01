@@ -11,28 +11,25 @@ port(ipin1, ipin2, ipin3, ipin4, ipin5, ipin6, ipin7: in bit;
 end entity;
 
 architecture behaviour of controller is
-signal p, p_next:integer;
 signal disp, display: string (1 to 10);
 signal lcd_write, start, reset, sclk: std_logic;
 shared variable delay, count: integer:=0;
 signal dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7: bit;
 signal lcd_state: std_logic_vector(0 to 1);
-shared variable parity: bit:= '0';
+signal parity: bit:= '0';
 
 --constant lim: integer:= 750000000;
 
 component interface Port(
 		lcd_write: in std_logic;
-		clk : in std_logic; 
+		sclk, clk : in std_logic; 
 		start : in std_logic;
 		reset : in std_logic;
 		char : in STRING;
 		lcd_data : out std_logic_vector (7 downto 0);
 		e : out std_logic;
 		rs : out std_logic;
-		rw : out std_logic;
-		p, p_next: inout integer:= 1;
-		lcd_state: inout std_logic_vector(0 to 1));
+		rw : out std_logic);
 end component;
 
 component layer port(
@@ -49,7 +46,7 @@ end component;
 
 begin
 --net: layer port map(sclk, clk, dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7, disp);
-LCD: interface port map(lcd_write, clk, start, reset, display, lcd_data, e, rs, rw);
+LCD: interface port map(lcd_write=>lcd_write, sclk=>sclk, clk=>clk, start=>start, reset=>reset, char=>display, lcd_data=>lcd_data, e=>e, rs=>rs, rw=>rw);
 slow: sclock port map(clk, sclk);
 
 testLCD: process(sclk)
@@ -82,22 +79,31 @@ end process;
 
 pUpdate: process(sclk) 
 begin
-parity := not parity;
+parity <= not parity;
 end process;
 
-resetLCDHead: process(sclk, display) is
+--timepass: process(clk)
+--begin
+--	if count = 0 then 
+--		count := count + 1;
+--		reset <= '0';
+--	else
+--		reset <= '1';
+--	end if;
+--end process;
+
+resetLCDHead: process(sclk) is
 begin
 	if parity = '1' then
 		reset <= '0';
+		
 	else
 		reset <= '1';
 	end if;
 end process;
 
-pipeDISP: process(sclk)
+pipeDISP: process(disp)
 begin
-		p <= 1; p_next <= 1;
-		lcd_state <= "00";
 		display <= disp;
 end process;
 
@@ -114,17 +120,18 @@ entity sclock is
 end entity ; -- sclock
 
 architecture behaviour of sclock is
-signal count: integer:= 0;
+signal count, ncount: integer:= 0;
 constant lim: integer:= 50;
 begin
-	
+
 	process(clk) is
 	begin
+	count <= ncount;
 	if(clk'event and clk='1') then
-		count <= count + 1;   --increment counter.
+		ncount <= count + 1;   --increment counter.
 	end if;
 	if(count = lim) then 
-		count <= 0;
+		ncount <= 0;
 		sclk <='1';
 	else
 		sclk <='0';

@@ -20,7 +20,7 @@ end lcd;
 
 architecture Behavioral of lcd is
        constant upper_limit:integer:=50000;
-		 constant upper_limit_write:integer:=5000000;
+		 constant upper_limit_write:integer:=500000;
        type state_type is (idle,command,ready,write_lcd);
        signal state,state_next:state_type:=idle;
        type command_type is array (0 to 3) of std_logic_vector (7 downto 0);
