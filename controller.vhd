@@ -4,7 +4,7 @@ use ieee.std_logic_1164.all;
 
 entity controller is
 port(
-	--ipin1, ipin2, ipin3, ipin4, ipin5, ipin6, ipin7: in bit;
+	ipin1, ipin2, ipin3, ipin4, ipin5, ipin6, ipin7: in bit;
 	led : out std_logic_vector ( 7 downto 0):= "00000000";
 	clk: in std_logic;
 	lcd_data : out std_logic_vector (7 downto 0);
@@ -15,10 +15,9 @@ architecture behaviour of controller is
 signal disp, display: string (1 to 10);
 signal reset, sclk: std_logic;
 shared variable delay, count: integer:=0;
---signal dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7: bit;
+signal dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7: bit;
 signal lcd_state: std_logic_vector(0 to 1);
-signal parity: bit:= '0';
-
+signal parity, m4b: bit:= '0';
 
 component interface Port(
 	sclk, clk : in std_logic;
@@ -32,7 +31,7 @@ end component;
 
 component layer port(
 sclk, clk: in std_logic;
---dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7: in bit; 
+dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7: in bit; 
 --ctrl:integer range -1 to 300;
 disp: out string(1 to 10));
 end component;
@@ -43,7 +42,7 @@ sclk: out std_logic);
 end component;
 
 begin
---net: layer port map(sclk, clk, dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7, disp);
+net: layer port map(sclk, clk, dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7, disp);
 LCD: interface port map( 
 	sclk=>sclk, 
 	clk=>clk,
@@ -54,25 +53,16 @@ LCD: interface port map(
 
 slow: sclock port map(clk, sclk);
 
-testLCD: process(sclk)
+capture: process(sclk) is
 begin
-	if parity = '1' then
-		disp <= "ABCDEFGHIJ";
-	else
-		disp <= "KLMNOPQRST";
-	end if;
+		dpin1 <= ipin1;
+		dpin2 <= ipin2;
+		dpin3 <= ipin3;
+		dpin4 <= ipin4;
+		dpin5 <= ipin5;
+		dpin6 <= ipin6;
+		dpin7 <= ipin7;
 end process;
-
---capture: process(sclk) is
---begin
---		dpin1 <= ipin1;
---		dpin2 <= ipin2;
---		dpin3 <= ipin3;
---		dpin4 <= ipin4;
---		dpin5 <= ipin5;
---		dpin6 <= ipin6;
---		dpin7 <= ipin7;
---end process;
 
 --pipeDISP: process(sclk) is
 	--begin
@@ -84,9 +74,7 @@ end process;
 
 pUpdate: process(sclk) 
 	begin
-	if (sclk='1') then
 		parity <= not parity;
-	end if;
 	end process;
 
 --timepass: process(clk)
@@ -102,10 +90,9 @@ pUpdate: process(sclk)
 resetLCDHead: process(sclk) is
 begin
 	if parity = '1' then
-		reset <= '1';
-		
-	else
 		reset <= '0';
+	else
+		reset <= '1';
 	end if;
 end process;
 
@@ -130,7 +117,7 @@ end entity ; -- sclock
 
 architecture behaviour of sclock is
 signal count, ncount: integer:= 0;
-constant lim: integer:= 250000000; --period=5s
+constant lim: integer:= 25;--250000000; --period=5s
 begin
 
 	process(clk) is

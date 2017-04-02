@@ -38,7 +38,7 @@ print "signal out0, out1, out2, out3, out4, out5, out6, out7, out8, out9: bit;"
 print "shared variable parity: bit:= '0';"
 #print "constant cfast: integer:= 50000;"
 #print "constant cslow: integer:= 750000;"
-print "signal ctrl: integer:= -10;"
+print "signal ctrl: integer range -11 to 300:= -11;"
 
 print """
 component perceptron is
@@ -58,13 +58,11 @@ parity := not parity;
 end process;
 """
 
-print "\n\tFSM: process(clk) is\n\tbegin\n\tdisp <= \"CAPTURE  0\";\n\tcase ctrl is\n"
-
-print ""
+print "\n\tFSM: process(clk) is\n\tbegin\n\t\n\tcase ctrl is\n\n\t\twhen -11=>\n\t\t\tdisp <= \"CAPTURE  0\";\n\t\t\tctrl <= -10;"
 
 for digit in range(0, 10):
 	print "\twhen "+str(digit-10)+" =>"
-	print "\t\tif parity = '1' then"	
+	print "\t\tif parity = '1' and clk = '1' then"	
 	for d in range(1, 8): print "\t\t\tdata"+str(d)+"("+str(digit)+") := dpin"+str(d)+";"
 	#print "\t\t\tchar <= \""+str(digit)+"\";"
 	if digit < 9: 
@@ -78,7 +76,6 @@ for digit in range(0, 10):
 	#print "\tcount := count + 1;\n"
 
 for digit in range(0, 10):
-	
 	for h in range(0, 10):
 		print "\twhen "+str((digit*10) + h)+" =>"
 		print "\t\t--TRAIN digit "+ str(h)

@@ -5,8 +5,6 @@ use ieee.numeric_std.all;
 
 entity lcd is
     Port ( clk : in STD_LOGIC; 
-               start : in STD_LOGIC;
-               lcd_write : in STD_LOGIC;
                reset : in STD_LOGIC;
                input1 : in STD_LOGIC_VECTOR (7 downto 0);
                lcd_data : out STD_LOGIC_VECTOR (7 downto 0);
@@ -26,19 +24,12 @@ architecture Behavioral of lcd is
        type command_type is array (0 to 3) of std_logic_vector (7 downto 0);
        constant commando: command_type:=(x"38",x"01",x"06",x"0F"); --LCD commands
        signal n,n_next:integer:=0;
-       signal lcd_write_tick,lcd_write_next:std_logic;
        signal counter,counter_next:integer:=0;
 		 type data_type is array(0 to 6) of std_logic_vector(7 downto 0);
 		 --constant data : data_type:= (x"51",x"55",x"41",x"4E",x"54",x"55",x"4B"); 
 --		 constant data : data_type:= (x"30",x"31",x"32",x"33",x"34",x"35",x"36");
 --		 signal p, p_next:integer :=0;
     begin
-       process(clk)
-       begin
-            if clk='1' and clk'event then
-                lcd_write_next<=lcd_write; 
-            end if;
-       end process;
 
        --lcd_write_tick<= lcd_write and (not lcd_write_next);
        rw<='0';
@@ -57,7 +48,7 @@ architecture Behavioral of lcd is
             end if;
        end process;
 
-       process(state,n,start,counter)
+       process(state,n,counter)
        begin
        -- avoid lacth
           state_next<=state;

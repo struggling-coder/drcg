@@ -8,8 +8,6 @@ entity interface is
 	 
     		char:in string(1 to 10);
 			sclk, clk : in STD_LOGIC; 
-               start : in STD_LOGIC;
-               lcd_write : in STD_LOGIC;
                reset : in STD_LOGIC;
 --               input1 : in STD_LOGIC_VECTOR (7 downto 0);
                lcd_data : out STD_LOGIC_VECTOR (7 downto 0);
@@ -34,11 +32,9 @@ architecture Behavioral of interface is
 
 component lcd Port(
 					clk : in STD_LOGIC; 
-               start : in STD_LOGIC;
-               lcd_write : in STD_LOGIC;
                reset : in STD_LOGIC;
                input1 : in STD_LOGIC_VECTOR (7 downto 0);
-               lcd_data : out STD_LOGIC_VECTOR (7 downto 0);x
+               lcd_data : out STD_LOGIC_VECTOR (7 downto 0);
                e : out STD_LOGIC;
                rs : out STD_LOGIC;
                rw : out STD_LOGIC;
@@ -51,8 +47,6 @@ begin
 
 Init_lcd : lcd PORT MAP (
 			clk=>clk,
-			start=>start, 
-			lcd_write=>lcd_write,
 			reset=>reset, 
 			input1=>input1, 
 			lcd_data=>lcd_data, 
