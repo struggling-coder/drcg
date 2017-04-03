@@ -6,13 +6,14 @@ use ieee.std_logic_1164.all;
 entity sclock is
   port (
 	clk: in std_logic;
-	sclk: out std_logic
+	sclk: out std_logic;
+	led: out std_logic
   ) ;
 end entity ; -- sclock
 
 architecture behaviour of sclock is
 signal count, ncount: integer:= 0;
-constant lim: integer:= 250000000; --period=5s
+constant lim: integer:= 25000000; --period=5s
 begin
 
 	process(clk) is
@@ -24,8 +25,10 @@ begin
 	if(count = lim) then 
 		ncount <= 0;
 		sclk <='1';
+		led <= '1';
 	else
 		sclk <='0';
+		led <= '0';
 	end if;
 	end process;
 

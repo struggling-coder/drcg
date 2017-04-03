@@ -13,21 +13,11 @@ end entity;
 
 architecture behaviour of controller is
 signal disp, display: string (1 to 10);
-signal reset, sclk, ssclk: std_logic;
+signal reset, sclk: std_logic;
 shared variable delay, count: integer:=0;
 signal dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7: bit;
 signal lcd_state: std_logic_vector(0 to 1);
-signal parity, m4b: bit:= '0';
-
-component interface Port(
-	sclk, clk : in std_logic;
-	reset : in std_logic;
-	char : in STRING;
-	lcd_data : out std_logic_vector (7 downto 0);
-	e : out std_logic;
-	rs : out std_logic;
-	rw : out std_logic);
-end component;
+signal parity, parity2, pz: std_logic:= '0';
 
 component layer port(
 sclk, clk: in std_logic;
@@ -36,29 +26,28 @@ dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7: in bit;
 disp: out string(1 to 10));
 end component;
 
-component sclock port( 
-clk: in std_logic;
-sclk: out std_logic);
+component LCD is
+port( Clk      	 : IN  STD_LOGIC := '0';
+      LCD_RS   	 : OUT STD_LOGIC;
+      LCD_E     	: OUT STD_LOGIC;	
+      toprint: in string(1 to 10);
+      LCD_DataOut : OUT STD_LOGIC_VECTOR(7 downto 0));
 end component;
 
-component ssclock port( 
+component sclock port( 
 clk: in std_logic;
-ssclk: out std_logic);
+sclk: out std_logic;
+led: out std_logic);
 end component;
 
 begin
-net: layer port map(ssclk, clk, dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7, disp);
 
-LCD: interface port map( 
-	sclk=>sclk, 
-	clk=>clk,
-	reset=>reset, 
-	char=>display, 
-	lcd_data=>lcd_data, 
-	e=>e, rs=>rs, rw=>rw);
+net: layer port map(sclk, clk, dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7, disp);
+lcdctrl: LCD port map(clk, rs, e, display, lcd_data);
+slow: sclock port map(clk, sclk, led(0));
 
-slow: sclock port map(clk, sclk);
-sslow: ssclock port map(clk, ssclk);
+led(1) <= '1';
+rw <= '0';
 
 capture: process(sclk) is
 begin
@@ -71,6 +60,20 @@ begin
 		dpin7 <= ipin7;
 end process;
 
+--testLCD: process(sclk)
+--begin 
+--	if rising_edge(sclk) then
+--		disp <= "CAPTURE 0 ";
+--	end if;
+--end process;
+
+p2Update: process(parity) 
+	begin
+	if (parity='1') then
+		parity2 <= not parity2;
+	end if;
+end process;
+
 --pipeDISP: process(sclk) is
 	--begin
 	--	if rising_edge(sclk) then
@@ -78,6 +81,11 @@ end process;
 	--		display <= disp;
 	--	end if;
 	--end process; 
+
+pzUpdate: process(sclk) 
+	begin
+		pz <= not pz;
+	end process;
 
 pUpdate: process(sclk) 
 	begin
@@ -93,15 +101,6 @@ pUpdate: process(sclk)
 	--		reset <= '1';
 	--	end if;
 	--end process;
-
-resetLCDHead: process(sclk) is
-begin
-	if parity = '1' then
-		reset <= '0';
-	else
-		reset <= '1';
-	end if;
-end process;
 
 pipeDISP: process(disp)
 begin

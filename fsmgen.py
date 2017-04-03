@@ -35,10 +35,12 @@ print "type inputs is array (0 to 9) of bit;"
 print "signal inp1, inp2, inp3, inp4, inp5, inp6, inp7: inputs;"
 print "shared variable data1, data2, data3, data4, data5, data6, data7: inputs;\n"
 print "signal out0, out1, out2, out3, out4, out5, out6, out7, out8, out9: bit;"
-print "shared variable parity: bit:= '0';"
+print "signal done: bit:= '0';"
+print "signal disp1, disp2: string(1 to 10);"
 #print "constant cfast: integer:= 50000;"
 #print "constant cslow: integer:= 750000;"
-print "signal ctrl: integer range -11 to 300:= -11;"
+print "signal ctrl: integer range -1 to 300:= -1;"
+print "signal fctrl: integer range -1 to 9;"
 
 print """
 component perceptron is
@@ -47,33 +49,41 @@ port (in1, in2, in3, in4, in5, in6, in7, tr_out, mode: in bit;
 end component;
 """
 
-print "\nbegin"
+print "\nbegin\n"
 
 for digit in range(0,10): 
 	print "neuron"+str(digit)+": perceptron port map(inp1("+str(digit)+"), inp2("+str(digit)+"), inp3("+str(digit)+"), inp4("+str(digit)+"), inp5("+str(digit)+"), inp6("+str(digit)+"), inp7("+str(digit)+"), tr_out"+str(digit)+", mode"+str(digit)+", out"+str(digit)+");"
 
-print """pUpdate: process(sclk) 
+
+print """
+process(sclk)
 begin
-parity := not parity;
+	if fctrl < 9 then
+		disp <= disp1;
+	else
+		disp <= disp2;
+	end if;
+
 end process;
 """
 
-print "\n\tFSM: process(clk) is\n\tbegin\n\t\n\tcase ctrl is\n\n\t\twhen -11=>\n\t\t\tdisp <= \"CAPTURE  0\";\n\t\t\tctrl <= -10;"
+print "\n\tcaptureFSM: process(sclk) is\n\tbegin\n\tif rising_edge(sclk) then\n\tcase fctrl is\n\t\twhen -1=>\n\t\t\tdisp1 <= \"CAPTURE  0\";\n\t\t\tfctrl <= 0;"
 
 for digit in range(0, 10):
-	print "\twhen "+str(digit-10)+" =>"
-	print "\t\tif parity = '1' and clk = '1' then"	
+	print "\twhen "+str(digit)+" =>"
 	for d in range(1, 8): print "\t\t\tdata"+str(d)+"("+str(digit)+") := dpin"+str(d)+";"
 	#print "\t\t\tchar <= \""+str(digit)+"\";"
 	if digit < 9: 
-		print "\t\t\tdisp <= \"CAPTURE "+str(digit+1)+" \";"
-		print "\t\t\tctrl <= "+str(digit -9)+";\n"
+		print "\t\t\tdisp1 <= \"CAPTURE "+str(digit+1)+" \";"
+		print "\t\t\tfctrl <= "+str(digit + 1)+";\n"
 	else:
-		print "\t\t\tdisp <= \"LETS DO IT\";" 
-		print "\t\t\tctrl <= 0;\n"
+		print "\t\t\tdisp1 <= \"LETS DO IT\";" 
+		print "\t\t\tdone <= '1';\n"
 	#print "\t\t\tcount := 1;"
-	print "\t\tend if;"
 	#print "\tcount := count + 1;\n"
+print "end case;\n\tend if;\n\tend process;"
+
+print "\n\tFSM: process(clk) is\n\tbegin\n\tif done='1' then\n\tcase ctrl is\n\n\t\twhen -1=>\n\t\t\tdisp2 <= \"WHAT THE F\";\n\t\t\tctrl <= 0;"
 
 for digit in range(0, 10):
 	for h in range(0, 10):
@@ -87,7 +97,7 @@ for digit in range(0, 10):
 		if h < 9: print "\t\t\tctrl <= "+str(digit*10 + (h+1))+";"
 		else: print "\t\t\tctrl <= "+str(digit*10 + h + 100)+";"
 		#print "\t\t\tcount := 1;"
-		print "\t\t\tdisp <= \"TRAIN "+str(digit)+"   \";"
+		print "\t\t\tdisp2 <= \"TRAIN "+str(digit)+"   \";"
 		#print "\t\tend if;"
 		#print "\tcount := count + 1;\n"
 
@@ -99,7 +109,7 @@ for digit in range(0, 10):
 		print "\t\tmode"+str(digit)+" <= '0';"
 		print "\t\tctrl <= "+str(digit*10 + 200 + z)+";"	
 		#print "\t\t\tcount := 1;"
-		print "\t\t\tdisp <= \"TEST "+str(digit)+"    \";"
+		print "\t\t\tdisp2 <= \"TEST "+str(digit)+"    \";"
 		#print "\t\tend if;"
 		#print "\tcount := count + 1;\n"
 		
@@ -113,7 +123,7 @@ for digit in range(0, 10):
 			print "\t\t\tctrl <= "+str(digit* 10 + 100 + z + 1)+";"
 			print "\t\tend if;"
 			#print "\t\t\tcount := 1;"
-			print "\t\t\tdisp <= \"TEST  "+str(digit)+"   \";"
+			print "\t\t\tdisp2 <= \"TEST  "+str(digit)+"   \";"
 			#print "\t\tend if;"
 			#print "\tcount := count + 1;\n"
 		
@@ -128,13 +138,13 @@ for digit in range(0, 10):
 			else: print "\t\t\tctrl <= 300;"
 			print "\t\tend if;"
 			#print "\t\t\tcount := 1;"
-			print "\t\t\tdisp <= \"TEST  "+str(digit)+"   \";"
+			print "\t\t\tdisp2 <= \"TEST  "+str(digit)+"   \";"
 			#print "\t\tend if;"
 			#print "\tcount := count + 1;\n"
 
 print "\twhen 300 => \n --WHATEVER"
 #for d in range(1, 8): print "\t\tled"+str(d)+" <= '1';"
-print "\t\tdisp <= \"INPUT PLS \";"
-print "when others => \n\tend case;\n\tend process;\n"
+print "\t\tdisp2 <= \"INPUT PLS \";"
+print "when others => \n\tend case;\n\tend if;\n\tend process;\n"
 
 print "\nend architecture assembly;"#"\tend case;\nend process;\nend architecture assembly;"
