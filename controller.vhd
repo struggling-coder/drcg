@@ -17,7 +17,7 @@ signal reset, sclk: std_logic;
 shared variable delay, count: integer:=0;
 --signal dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7: bit;
 signal lcd_state: std_logic_vector(0 to 1);
-signal parity: bit:= '0';
+signal parity,parity2: bit:= '0';
 
 
 component interface Port(
@@ -56,7 +56,7 @@ slow: sclock port map(clk, sclk);
 
 testLCD: process(sclk)
 begin
-	if parity = '1' then
+	if parity2 = '1' then
 		disp <= "ABCDEFGHIJ";
 	else
 		disp <= "KLMNOPQRST";
@@ -86,6 +86,13 @@ pUpdate: process(sclk)
 	begin
 	if (sclk='1') then
 		parity <= not parity;
+	end if;
+	end process;
+
+p2Update: process(parity) 
+	begin
+	if (parity='1') then
+		parity2 <= not parity2;
 	end if;
 	end process;
 
@@ -130,7 +137,7 @@ end entity ; -- sclock
 
 architecture behaviour of sclock is
 signal count, ncount: integer:= 0;
-constant lim: integer:= 250000000; --period=5s
+constant lim: integer:= 250000000; --period=5s, refresh rate =10s	
 begin
 
 	process(clk) is
