@@ -4,55 +4,42 @@ use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
 
 entity interface is
-    Port ( 
-	 
-    		char:in string(1 to 10);
-			sclk, clk : in STD_LOGIC; 
-               start : in STD_LOGIC;
-               lcd_write : in STD_LOGIC;
-               reset : in STD_LOGIC;
---               input1 : in STD_LOGIC_VECTOR (7 downto 0);
-               lcd_data : out STD_LOGIC_VECTOR (7 downto 0);
-               e : out STD_LOGIC;
-               rs : out STD_LOGIC;
-               rw : out STD_LOGIC
-			--button : in STd_LOGIC
-);
+    Port(	 
+    	char:in string(1 to 10); 
+		sclk, clk : in STD_LOGIC; 
+        reset : in STD_LOGIC;
+        lcd_data : out STD_LOGIC_VECTOR (7 downto 0);
+        e : out STD_LOGIC;
+        rs : out STD_LOGIC;
+        rw : out STD_LOGIC
+		);
 end interface;
 
 architecture Behavioral of interface is
-
-	--type data_type is array(0 to 6) of character;
-	--constant char : data_type:= ('3','.','1','4','1','5','9');
-	--constant char : data_type:= ('A','B','C','D','E','F','G');
---	 constant char : STRING:="HELLO WORLD";
-	signal p, p_next:integer :=1;--0;
+	--constant char : STRING:="HELLO WORLD";
+	signal p, p_next:integer :=1;--0; -----initialisation
 	signal input1 : STD_LOGIC_VECTOR (7 downto 0):="00000000";
 	signal data : STD_LOGIC_VECTOR (7 downto 0):="00000000";--"01010000";
 	signal lcd_state : STD_LOGIC_VECTOR (0 to 1);
 	--signal char : character:= '1' ;
 
-component lcd Port(
-					clk : in STD_LOGIC; 
-               start : in STD_LOGIC;
-               lcd_write : in STD_LOGIC;
-               reset : in STD_LOGIC;
-               input1 : in STD_LOGIC_VECTOR (7 downto 0);
-               lcd_data : out STD_LOGIC_VECTOR (7 downto 0);x
-               e : out STD_LOGIC;
-               rs : out STD_LOGIC;
-               rw : out STD_LOGIC;
-					lcd_state : out STD_LOGIC_VECTOR (0 to 1) := "00"
---					button : in STd_LOGIC
-);
+component lcd is
+	port(
+		clk : in STD_LOGIC;
+        reset : in STD_LOGIC;
+        input1 : in STD_LOGIC_VECTOR (7 downto 0);
+        lcd_data : out STD_LOGIC_VECTOR (7 downto 0);
+        e : out STD_LOGIC;
+        rs : out STD_LOGIC;
+        rw : out STD_LOGIC;
+		lcd_state : out STD_LOGIC_VECTOR (0 to 1) := "00"
+		);
 end component;
 
 begin
 
 Init_lcd : lcd PORT MAP (
 			clk=>clk,
-			start=>start, 
-			lcd_write=>lcd_write,
 			reset=>reset, 
 			input1=>input1, 
 			lcd_data=>lcd_data, 
@@ -65,11 +52,11 @@ Init_lcd : lcd PORT MAP (
 process(clk, sclk)
  begin
 	if clk='1' and clk'event then
-			p<=p_next;			
-	  end if;
-	  if sclk = '1' then
+		p<=p_next;			
+	end if;
+	if sclk = '1' then
 		p <= 1;
-	  end if;
+	end if;
 end process;
 							
 
@@ -163,23 +150,23 @@ chartoBIN: process(lcd_state) --char will be changed to string
 communicate: process(lcd_state)
 begin
 p_next<=p;
-	if lcd_state = "00" then
+	if lcd_state = "00" then --standby
 		input1 <= "00000000";
-	elsif lcd_state = "01" then
-		--if p<7 then
+	elsif lcd_state = "01" then --no input available to write, so waiting for input to arrive ('ready' state)
+		
 		if p<(char'LENGTH+1) then	
 			input1 <= data;
 		else
 			input1 <= "00000000";
 		end if;
-	elsif lcd_state = "10" then
-		--if p<7 then
+	elsif lcd_state = "10" then --input available to be written (going to write_lcd state), OR already writing data
+		
 		if p<(char'LENGTH+1) then	
 			input1 <= data;
 		else
 			input1 <= "00000000";
 		end if;
-	elsif lcd_state = "11" then
+	elsif lcd_state = "11" then --done writing input; give me next input (still in write_lcd state)
 		p_next <= p+1;
 	end if;
 

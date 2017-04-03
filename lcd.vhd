@@ -4,83 +4,65 @@ use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
 
 entity lcd is
-    Port ( clk : in STD_LOGIC; 
-               start : in STD_LOGIC;
-               lcd_write : in STD_LOGIC;
-               reset : in STD_LOGIC;
-               input1 : in STD_LOGIC_VECTOR (7 downto 0);
-               lcd_data : out STD_LOGIC_VECTOR (7 downto 0);
-               e : out STD_LOGIC;
-               rs : out STD_LOGIC;
-               rw : out STD_LOGIC;
-					lcd_state : out STD_LOGIC_VECTOR(0 to 1) := "00"
---					button : in STd_LOGIC
+    Port (clk : in STD_LOGIC; 
+          reset : in STD_LOGIC;
+          input1 : in STD_LOGIC_VECTOR (7 downto 0);
+          lcd_data : out STD_LOGIC_VECTOR (7 downto 0);
+          e : out STD_LOGIC;
+          rs : out STD_LOGIC;
+          rw : out STD_LOGIC;
+					lcd_state : out STD_LOGIC_VECTOR(0 to 1) := "00" --status bits
 					);
 end lcd;
 
 architecture Behavioral of lcd is
-       constant upper_limit:integer:=50000;
-		 constant upper_limit_write:integer:=500000;
-       type state_type is (idle,command,ready,write_lcd);
-       signal state,state_next:state_type:=idle;
-       type command_type is array (0 to 3) of std_logic_vector (7 downto 0);
-       constant commando: command_type:=(x"38",x"01",x"06",x"0F"); --LCD commands
-       signal n,n_next:integer:=0;
-       signal lcd_write_tick,lcd_write_next:std_logic;
-       signal counter,counter_next:integer:=0;
-		 type data_type is array(0 to 6) of std_logic_vector(7 downto 0);
-		 --constant data : data_type:= (x"51",x"55",x"41",x"4E",x"54",x"55",x"4B"); 
---		 constant data : data_type:= (x"30",x"31",x"32",x"33",x"34",x"35",x"36");
---		 signal p, p_next:integer :=0;
+      constant upper_limit:integer:=50000;
+		  constant upper_limit_write:integer:=500000;
+      type state_type is (idle,command,ready,write_lcd);
+      signal state,state_next:state_type:=idle;
+      type command_type is array (0 to 3) of std_logic_vector (7 downto 0);
+      constant commando: command_type:=(x"38",x"01",x"06",x"0F"); --LCD commands
+      signal n,n_next:integer:=0;
+      signal counter,counter_next:integer:=0;
     begin
-       process(clk)
-       begin
-            if clk='1' and clk'event then
-                lcd_write_next<=lcd_write; 
-            end if;
-       end process;
+      
+       
+      rw<='0'; --only writing to the LCD, no read operations to be done
 
-       --lcd_write_tick<= lcd_write and (not lcd_write_next);
-       rw<='0';
-
-       process(clk,reset)
-       begin
-            if reset='1' then
+      process(clk,reset)
+          begin
+            if reset='1' then --reset is active low (1=>off,0=>on)
                 state<=idle;
                 n<=0;
-					--  p<=0;
                 counter<=0;
-            elsif clk='1' and clk'event then
+            elsif clk='1' and clk'event then --update iterating variables at every clock edge
                 state<=state_next;
                 n<=n_next;
                 counter<=counter_next; 
             end if;
-       end process;
+          end process;
 
-       process(state,n,start,counter)
-       begin
-       -- avoid lacth
-          state_next<=state;
+      process(state,n,counter)
+        begin
+        -- avoid latch
+          state_next<=state; --default updation (?)
           counter_next<=counter;
           n_next<=n;
-          rs<='1';
+          rs<='1'; --data input
           e<='1'; 
           case state is 
             when idle => 
-						--p<=0;
-                  --if start='1' then
-    						lcd_state <= "00";
+    						lcd_state <= "00"; --!!!!--------need to check interface code--------!!!
                 state_next<=command;
-                  --end if;
             when command=> 
 				        lcd_state <= "00";
-                rs<='0';
+                rs<='0'; --instruction input
                 lcd_data<=commando(n); 
-                if counter =upper_limit then
+                if counter =upper_limit then --this scales down the frequency of sending commands to lcd
                   e<='0';
                   counter_next<=0;
                   n_next<=n+1;
-                  if n = commando'high then
+                  if n = commando'high then --all commands done
                     n_next<=0;
                     state_next<=ready;
                   end if;
@@ -95,15 +77,15 @@ architecture Behavioral of lcd is
     									state_next<=write_lcd; 
     									counter_next<=0;
     						  else
-    								 counter_next<=counter+1; 
+    								  counter_next<=counter+1; 
     						  end if; 
-    						else
+    						else --no input available to write
     							lcd_state <= "01";
                 end if;
             when write_lcd=>
     					  lcd_state <="10";
-                lcd_data <= input1; --std_LOGIC_VECTOR(to_unsigned(p,8)); -- --"00110011"; --
-                if counter = upper_limit_write then
+                lcd_data <= input1;
+                if counter = upper_limit_write then --scaling down the frequency of write
                   e<='0';
                   counter_next<=0;
                   state_next<=ready;
