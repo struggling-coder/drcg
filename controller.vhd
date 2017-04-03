@@ -13,7 +13,7 @@ end entity;
 
 architecture behaviour of controller is
 signal disp, display: string (1 to 10);
-signal reset, sclk: std_logic;
+signal reset, sclk, ssclk: std_logic;
 shared variable delay, count: integer:=0;
 signal dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7: bit;
 signal lcd_state: std_logic_vector(0 to 1);
@@ -41,8 +41,14 @@ clk: in std_logic;
 sclk: out std_logic);
 end component;
 
+component ssclock port( 
+clk: in std_logic;
+ssclk: out std_logic);
+end component;
+
 begin
-net: layer port map(sclk, clk, dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7, disp);
+net: layer port map(ssclk, clk, dpin1, dpin2, dpin3, dpin4, dpin5, dpin6, dpin7, disp);
+
 LCD: interface port map( 
 	sclk=>sclk, 
 	clk=>clk,
@@ -52,6 +58,7 @@ LCD: interface port map(
 	e=>e, rs=>rs, rw=>rw);
 
 slow: sclock port map(clk, sclk);
+sslow: ssclock port map(clk, ssclk);
 
 capture: process(sclk) is
 begin
@@ -103,38 +110,7 @@ end process;
 
 end architecture;
 
--------------------Slow clock----------------
-
-library ieee;
-use ieee.std_logic_1164.all;
-
-entity sclock is
-  port (
-	clk: in std_logic;
-	sclk: out std_logic
-  ) ;
-end entity ; -- sclock
-
-architecture behaviour of sclock is
-signal count, ncount: integer:= 0;
-constant lim: integer:= 25;--250000000; --period=5s
-begin
-
-	process(clk) is
-	begin
-	count <= ncount;
-	if(clk'event and clk='1') then
-		ncount <= count + 1;   --increment counter.
-	end if;
-	if(count = lim) then 
-		ncount <= 0;
-		sclk <='1';
-	else
-		sclk <='0';
-	end if;
-	end process;
-
-end architecture ; -- behaviour
+ -- behaviour
 
 --library ieee;
 --use ieee.std_logic_1164.all;
