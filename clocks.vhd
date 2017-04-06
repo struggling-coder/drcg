@@ -13,7 +13,7 @@ end entity ; -- sclock
 
 architecture behaviour of sclock is
 signal count, ncount: integer:= 0;
-constant lim: integer:= 25000000; --period=5s
+constant lim: integer:= 750000000; --period=5s
 begin
 
 	process(clk) is
@@ -48,7 +48,7 @@ end entity ; -- ssclock
 
 architecture behaviour of ssclock is
 signal count, ncount: integer:= 0;
-constant lim: integer:= 750000000; --period=5s
+constant lim: integer:= 75;--0000000; --period=5s
 begin
 
 	process(clk) is

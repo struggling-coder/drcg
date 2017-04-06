@@ -15,16 +15,19 @@
 --  
 --  For the perceptron, mode 0 is test and mode 1 is train
 
+library ieee;
+use ieee.std_logic_1164.all;
+
 entity perceptron is
-port (in1, in2, in3, in4, in5, in6, in7, tr_out, mode: in bit;
-		output: out bit);
+port (in1, in2, in3, in4, in5, in6, in7, tr_out, mode: in std_logic;
+		output: out std_logic);
 end entity perceptron;
 
 architecture behaviour of perceptron is
 type arrayw is array(0 to 7) of integer;
 shared variable weights: arrayw:= (others => 0);
 shared variable tempsum: integer := 0;
-shared variable t_out: bit;
+shared variable t_out: std_logic;
 
 begin
 basic: process(in1, in2, in3, in4, in5, in6, in7, mode, tr_out) is
